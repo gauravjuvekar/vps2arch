@@ -51,7 +51,8 @@ download_and_extract_bootstrap() {
 	rm -f "$filename"
 
 	if grep -E '^nameserver\s+127\.' /etc/resolv.conf > /dev/null; then
-		echo "nameserver 8.8.8.8" > "/root.$cpu_type/etc/resolv.conf"
+		echo "nameserver 1.1.1.1" >> "/root.$cpu_type/etc/resolv.conf"
+		echo "nameserver 2606:4700:4700::1111" >> "/root.$cpu_type/etc/resolv.conf"
 	else
 		cp -L /etc/resolv.conf "/root.$cpu_type/etc"
 	fi
