@@ -25,15 +25,8 @@ else
 	exit 2
 fi
 
-get_country() {
-	_download "https://api.ip.sb/geoip" | grep -oP '(?<=country_code":")\w+'
-}
-
 get_mirrors() {
-	country=$1
-
-	[ -z $country ] && country=$(get_country || echo -n "all")
-	_download "https://www.archlinux.org/mirrorlist/?country=$country&protocol=http&protocol=https&ip_version=4&use_mirror_status=on" | grep -oP '(?<=#Server = ).*(?=\$repo/)' || get_mirrors all
+	_download "https://archlinux.org/mirrorlist/?country=all&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" | grep -oP '(?<=#Server = ).*(?=\$repo/)'
 }
 
 cpu_type=$(uname -m)
