@@ -31,7 +31,7 @@ get_country() {
 
 get_mirrors() {
 	country=$1
-	
+
 	[ -z $country ] && country=$(get_country || echo -n "all")
 	_download "https://www.archlinux.org/mirrorlist/?country=$country&protocol=http&protocol=https&ip_version=4&use_mirror_status=on" | grep -oP '(?<=#Server = ).*(?=\$repo/)' || get_mirrors all
 }
@@ -115,6 +115,12 @@ configure_chroot() {
 save_root_pass() {
 	grep '^root:' /etc/shadow > "/root.$cpu_type/root.passwd"
 	chmod 0600 "/root.$cpu_type/root.passwd"
+
+	# Delete root password and copy root ssh config
+	mkdir -p "/root.$cpu_type/root/.ssh"
+	chmod 0700 "/root.$cpu_type/root/.ssh"
+	cp -r  "/root/.ssh" "/root.$cpu_type/root/"
+	chown -R root:root "/root.$cpu_type/root/.ssh/"
 }
 
 backup_old_files() {
@@ -148,13 +154,12 @@ install_packages() {
 }
 
 restore_root_pass() {
-	# If the root password is not set, use vps2arch
-	if egrep -q '^root:[^$]' "/root.$cpu_type/root.passwd"; then
-		echo "root:vps2arch" | chpasswd
-	else
-		sed -i '/^root:/d' /etc/shadow
-		cat "/root.$cpu_type/root.passwd" >> /etc/shadow
-	fi
+	# Delete root password and copy root ssh config
+	passwd -d root
+	mkdir -p "/root/.ssh"
+	chmod 0700 "/root/.ssh"
+	cp -r "/root.$cpu_type/root/.ssh" "/root/"
+	chown -R root:root "/root/.ssh"
 }
 
 cleanup() {
@@ -281,16 +286,16 @@ finalize() {
 	fi
 
 	# Enable SSH login for user root (#3)
-	sed -i '/^#PermitRootLogin\s/s/.*/&\nPermitRootLogin yes/' /etc/ssh/sshd_config
-	
+	sed -i '/^#PermitRootLogin\s/s/.*/&\nPermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+
 	# Run reflector to get updated mirrors
-	
+
 	cat <<-EOF
-	
+
 		Reflector: Rating the 35 most recently synced HTTPS servers, sorting them by download speed
-		
+
 	EOF
-	
+
 	reflector -l 35 -p https --sort rate --save /etc/pacman.d/mirrorlist
 
 	cat <<-EOF
@@ -302,7 +307,6 @@ finalize() {
 		When you are finished with your post-installation, you'll need to reboot the VM the rough way:
 		# sync ; reboot -f
 
-		Then you'll be able to connect to your VM using SSH and to login using your old root password (or "vps2arch" if you didn't have a root password).
 	EOF
 }
 
