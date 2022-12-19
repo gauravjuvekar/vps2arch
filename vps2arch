@@ -224,11 +224,7 @@ configure_cloud_init() {
 finalize() {
 	# Enable SSH login for user root (#3)
 	sed -i '/^#PermitRootLogin\s/s/.*/&\nPermitRootLogin prohibit-password/' /etc/ssh/sshd_config
-
 	systemctl enable sshd
-
-	# Run reflector to get updated mirrors
-	reflector -l 35 -p https --sort rate --save /etc/pacman.d/mirrorlist
 
 	sync
 	reboot -f
