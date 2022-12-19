@@ -119,7 +119,7 @@ delete_all() {
 }
 
 install_packages() {
-	local packages="base linux lvm2 openssh reflector"
+	local packages="base linux lvm2 openssh reflector cloud-init"
 	[ "$bootloader" != "none" ] && packages="$packages $bootloader"
 	# XXX Install gptdisk for syslinux. To be removed then FS#45029 will be closed
 	[ "$bootloader" = "syslinux" ] && packages="$packages gptfdisk"
@@ -252,6 +252,12 @@ configure_network() {
 	systemctl enable sshd
 }
 
+configure_cloud_init() {
+	sed -i -e 's/^disable_root:.*/disable_root: false/' /etc/cloud/cloud.cfg
+	systemctl enable cloud-init
+}
+
+
 finalize() {
 	# Enable SSH login for user root (#3)
 	sed -i '/^#PermitRootLogin\s/s/.*/&\nPermitRootLogin prohibit-password/' /etc/ssh/sshd_config
@@ -342,4 +348,5 @@ restore_root_pass
 cleanup
 configure_bootloader
 configure_network
+configure_cloud_init
 finalize
