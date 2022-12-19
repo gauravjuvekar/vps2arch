@@ -87,8 +87,6 @@ configure_chroot() {
 		echo 'Server = '"$m"'/$repo/os/$arch'
 	done > "/root.$cpu_type/etc/pacman.d/mirrorlist"
 	# Install and initialize haveged if needed
-	chroot_exec 'pacman --needed --noconfirm -Sy haveged && haveged'
-	mv "/root.$cpu_type/etc/pacman.conf.bak" "/root.$cpu_type/etc/pacman.conf"
 	chroot_exec 'pacman-key --init && pacman-key --populate archlinux'
 	chroot_exec 'pacman --needed --noconfirm -Sy archlinux-keyring'
 	# Generate fstab
