@@ -14,6 +14,7 @@
 # more details.
 
 set -e
+set -x
 
 # Gathering informations about actual environment.
 if command -v wget >/dev/null 2>&1; then
